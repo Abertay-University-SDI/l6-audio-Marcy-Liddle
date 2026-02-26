@@ -5,6 +5,8 @@
 #include "Framework/Collision.h"
 #include "Sheep.h"
 #include "Rabbit.h"
+#include "Framework/AudioManager.h"
+#include <SFML/Audio.hpp>
 
 #include <iomanip>      // Phase one includes
 #include <fstream>
@@ -17,6 +19,9 @@ public:
 	void handleInput(float dt) override;
 	void update(float dt) override;
 	void render() override;
+
+    void spawnSheep(sf::Vector2f worldSize);
+    bool checkPositionOutsideWalls(sf::Vector2f pos)
 
     void reset();
 
@@ -45,12 +50,18 @@ private:
     bool m_isGameOver;
 
     // UI & Timer
-    sf::Clock m_gameTimer;      // We will replace this with a float, although clocks are cool.
+    float m_timeSpent;
+    float m_sheepTimer;
+    float m_maxTime = 30.f;
+    const float SHEEP_INTERVAL = 10.f;
+    float m_additionalTime = 5.f;
+
     sf::Font m_font;
     sf::Text m_timerText;
     sf::Text m_winText;
 	
     sf::Text m_scoreboardText;  
     std::string m_levelName;
+
 
 };

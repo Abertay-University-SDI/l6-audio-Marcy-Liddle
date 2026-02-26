@@ -1,7 +1,7 @@
 #include "Level.h"
 
 Level::Level(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& audio) :
-    BaseLevel(hwnd, in, gs, audio), m_timerText(m_font), m_winText(m_font), m_scoreboardText(m_font)
+    BaseLevel(hwnd, in, gs, audio), m_timerText(m_font), m_winText(m_font), m_scoreboardText(m_font)//, m_corpoSound(m_corpoBuffer), m_natureSound(m_natureBuffer), m_yaySound(m_yayBuffer), m_bahSound(m_bahBuffer)
 {
     if (!m_font.openFromFile("font/arial.ttf")) {
         std::cerr << "Error loading font" << std::endl;
@@ -14,6 +14,7 @@ Level::Level(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud
     // everything else we can chuck into reset()
     m_playerRabbit = nullptr;    // ensures nothing is deleted inside reset();
     reset();   
+
 }
 
 Level::~Level()
@@ -30,6 +31,10 @@ Level::~Level()
 
 void Level::reset()
 {
+    m_audio.stopAllMusic();
+
+    m_audio.playMusicbyName("nature");
+
     sf::Vector2f levelSize = { 800.f, 800.f };
     m_levelBounds = { {0.f, 0.f}, {levelSize } };
     m_isGameOver = false;
@@ -66,7 +71,9 @@ void Level::reset()
 
     loadLevel("data/level1.txt", levelSize);
 
-    m_gameTimer.restart();
+    m_timeSpent = 0.f;
+    m_sheepTimer = 0.f;
+
 }
 
 void Level::UpdateCamera()
@@ -132,7 +139,12 @@ void Level::manageCollisions()
             }
         }
         if (Collision::checkBoundingBox(*m_sheepList[i], m_goal))
-            m_sheepList[i]->collideWithGoal(m_goal);
+        {
+            m_audio.playSoundbyName("yay");
+            m_sheepList[i]->collideWithGoal(m_goal); 
+            m_maxTime += m_additionalTime;
+        }
+            
     }
     for (auto wall : m_walls)
     {
@@ -155,7 +167,8 @@ void Level::update(float dt)
     }
 
     // Timer 
-    float timeElapsed = m_gameTimer.getElapsedTime().asSeconds();
+    m_timeSpent += dt;
+    float timeElapsed = m_maxTime - m_timeSpent;
     m_timerText.setString("Time: " + std::to_string(static_cast<int>(timeElapsed)));
 
 
@@ -240,7 +253,9 @@ void Level::loadLevel(std::string fileName, sf::Vector2f worldSize)
             newSheep->setTexture(&m_sheepTexture);
             newSheep->setSize({ 32,32 });
             newSheep->setWorldSize(worldSize.x, worldSize.y);
+            newSheep->setAudioPointer(&m_audio);
             m_sheepList.push_back(newSheep);
+
         }
         else if (object == "RABBIT")
         {
@@ -274,3 +289,14 @@ void Level::loadLevel(std::string fileName, sf::Vector2f worldSize)
 }
 
 
+void Level::spawnSheep(sf::Vector2f worldSize)
+{
+    float x = rand() % worldSize.x;
+
+    Sheep* newSheep = new Sheep(sf::Vector2f(x, y), m_playerRabbit);
+    newSheep->setTexture(&m_sheepTexture);
+    newSheep->setSize({ 32,32 });
+    newSheep->setWorldSize(worldSize.x, worldSize.y);
+    newSheep->setAudioPointer(&m_audio);
+    m_sheepList.push_back(newSheep);
+}

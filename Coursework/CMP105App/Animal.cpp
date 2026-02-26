@@ -101,3 +101,8 @@ void Animal::setDirection()
         m_currentAnimation->setFlipped(false);
     }
 }
+
+void Animal::setAudioPointer(AudioManager* audio)
+{
+    m_audio = audio;
+}

@@ -53,6 +53,7 @@ void Sheep::update(float dt)
 	{
 		// head away from them
 		m_acceleration = -to_rabbit.normalized() * ACCELERATION;
+		m_audio->playSoundbyName("bah");
 	}
 
 	Animal::update(dt);
@@ -60,5 +61,6 @@ void Sheep::update(float dt)
 
 void Sheep::collideWithGoal(GameObject& goal)
 {
+	
 	setAlive(false);
 }
