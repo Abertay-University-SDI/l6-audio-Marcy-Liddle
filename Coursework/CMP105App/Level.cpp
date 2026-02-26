@@ -35,7 +35,7 @@ void Level::reset()
 
     m_audio.playMusicbyName("nature");
 
-    sf::Vector2f levelSize = { 800.f, 800.f };
+    levelSize = { 800.f, 800.f };
     m_levelBounds = { {0.f, 0.f}, {levelSize } };
     m_isGameOver = false;
     if (m_playerRabbit) delete m_playerRabbit;
@@ -142,6 +142,7 @@ void Level::manageCollisions()
         {
             m_audio.playSoundbyName("yay");
             m_sheepList[i]->collideWithGoal(m_goal); 
+            spawnSheep(levelSize);
             m_maxTime += m_additionalTime;
         }
             
@@ -176,6 +177,12 @@ void Level::update(float dt)
     UpdateCamera();
     m_isGameOver = timeElapsed > 99;    // temporary
 
+    m_sheepTimer += dt;
+    if (m_sheepTimer >= SHEEP_INTERVAL)
+    {
+        spawnSheep(levelSize);
+    }
+
     if (m_isGameOver)
     {
         // will happen ONCE in the frame that game over is triggered.
@@ -203,6 +210,9 @@ void Level::render()
         m_window.draw(m_winText);
         m_window.draw(m_scoreboardText);
     }
+
+    displayHUD();
+
     endDraw();
 }
 
@@ -291,7 +301,14 @@ void Level::loadLevel(std::string fileName, sf::Vector2f worldSize)
 
 void Level::spawnSheep(sf::Vector2f worldSize)
 {
-    float x = rand() % worldSize.x;
+    float x = rand() % (static_cast<int>(worldSize.x));
+    float y = rand() % (static_cast<int>(worldSize.y));
+
+    while (!checkPositionOutsideWalls({ x,y }))
+    {
+        x = rand() % (static_cast<int>(worldSize.x));
+        y = rand() % (static_cast<int>(worldSize.y));
+    }
 
     Sheep* newSheep = new Sheep(sf::Vector2f(x, y), m_playerRabbit);
     newSheep->setTexture(&m_sheepTexture);
@@ -299,4 +316,25 @@ void Level::spawnSheep(sf::Vector2f worldSize)
     newSheep->setWorldSize(worldSize.x, worldSize.y);
     newSheep->setAudioPointer(&m_audio);
     m_sheepList.push_back(newSheep);
+
+    m_sheepTimer = 0.f;
+}
+
+bool Level::checkPositionOutsideWalls(sf::Vector2f pos)
+{
+    for (auto wall : m_walls)
+    {
+        if (wall.getPosition().x >= pos.x && wall.getPosition().y <= pos.y)
+        {
+            return false;
+        }
+    }
+
+    return true;
+
+}
+
+void Level::displayHUD()
+{
+
 }

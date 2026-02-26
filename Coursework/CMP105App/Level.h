@@ -21,7 +21,9 @@ public:
 	void render() override;
 
     void spawnSheep(sf::Vector2f worldSize);
-    bool checkPositionOutsideWalls(sf::Vector2f pos)
+    bool checkPositionOutsideWalls(sf::Vector2f pos);
+
+    void displayHUD();
 
     void reset();
 
@@ -48,6 +50,7 @@ private:
     // Level Data
     sf::FloatRect m_levelBounds;
     bool m_isGameOver;
+    sf::Vector2f levelSize;
 
     // UI & Timer
     float m_timeSpent;
