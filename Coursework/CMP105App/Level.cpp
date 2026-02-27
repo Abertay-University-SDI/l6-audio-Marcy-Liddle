@@ -322,19 +322,72 @@ void Level::spawnSheep(sf::Vector2f worldSize)
 
 bool Level::checkPositionOutsideWalls(sf::Vector2f pos)
 {
-    for (auto wall : m_walls)
-    {
-        if (wall.getPosition().x >= pos.x && wall.getPosition().y <= pos.y)
-        {
-            return false;
-        }
-    }
+    sf::Vector2i checkPos
+    ({
+         static_cast<int>(pos.x),
+         static_cast<int>(pos.y)
+      });
 
+    for (auto& wall : m_walls)
+        if (Collision::checkBoundingBox(wall, checkPos)) return false;
     return true;
 
 }
 
+
 void Level::displayHUD()
 {
+
+    // step one: get the references
+    sf::View world_view = m_window.getView();
+    sf::Vector2f middle = world_view.getCenter();
+    sf::Vector2f vSize = world_view.getSize();
+
+    // step two: set to default view
+    m_window.setView(m_window.getDefaultView());
+
+    // step three: position markers
+    float half_w = vSize.x / 2.0f;
+    float half_h = vSize.y / 2.0f;
+
+    for (auto& sheep : m_sheepList)
+    {
+        if (!sheep->isAlive()) continue;
+
+        // by default markers should be in middle of x and y
+        float marker_x = half_w;
+        float marker_y = half_h;
+
+        sf::Vector2f sPos = sheep->getPosition();
+
+        if (sPos.x > middle.x + half_w) {
+            marker_x = vSize.x - 10.f;
+        }
+        else if (sPos.x < middle.x - half_w) {
+            marker_x = 10.f;
+        }
+
+        if (sPos.y > middle.y + half_h) {
+            marker_y = vSize.y - 10.f;
+        }
+        else if (sPos.y < middle.y - half_h) {
+            marker_y = 10.f;
+        }
+
+        if (marker_x == half_w && marker_y == half_h) {
+            continue;
+        }
+
+
+        // still step three: display the markers
+        sf::CircleShape marker(5.f);
+        marker.setOrigin({ 5.f, 5.f });
+        marker.setFillColor(sf::Color::Red);
+        marker.setPosition({ marker_x, marker_y });
+        m_window.draw(marker);
+    }
+
+    // step four: Restore world view 
+    m_window.setView(world_view);
 
 }
